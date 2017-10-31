@@ -1,55 +1,95 @@
 //Dependencies
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-var express = require("express");
+var express = require('express');
 
 var app = express();
 var PORT = 3000;
 
+var path = require("path");
+
+var bodyParser = require('body-parser');
+
+//Body-Parser
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.text());
+app.use(bodyParser.json({type: "application/vnd.api+json"}));
+
 //Data
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-var yoda = {
+var characters = [
+
+	{
+	routeName: "yoda",
 	name: "Yoda",
 	role: "Jedi Master",
 	age: 900,
 	forcePoints: 2000
-};
+	}, 
 
-var darthMaul = {
+	{
+	routeName: "darthmaul",
 	name: "Darth Maul",
 	role: "Sith Lord",
 	age: 200, 
 	forcePoints: 1200
-};
+	}, 
 
-var obiWan = {
+	{
+	routeName: "obiwan",
 	name: "Obi Wan Kenobi",
-	role: "Jedi",
-	age: 12,
-	forcePoints: 5
+	role: "Jedi Knight",
+	age: 60,
+	forcePoints: 1350
+	}
+];
 
-};
 
 //Routes
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 app.get("/", function(req, res) {
-	res.send("Welcome to the Star Wars Page!");
+	res.sendFile(path.join(__dirname, "view.html"));
 });
 
-app.get("/yoda", function(req, res) {
-	res.json(yoda);
-});
-
-app.get("/darthmaul", function(req, res) {
-	res.json(darthMaul);
-});
-
-app.get("/obiwan", function(req, res) {
-	res.json(obiWan);
+app.get("/add", function(req, res) {
+	res.sendFile(path.join(__dirname, "add.html"));
 })
 
+app.get("/api/:characters?", function(req, res) {
 
+	var chosen = req.params.characters;
+
+	if(chosen){
+
+		console.log(chosen);
+
+		for (var i=0; i < characters.length; i++) {
+			if (chosen === characters[i].routeName) {
+				res.json(characters[i]);
+				return;
+			}
+		}
+
+		res.send("No character found");
+
+	} else {
+		res.json(characters);
+	}
+});
+
+app.post("/api/new", function(req, res) {
+	var newcharacter = req.body;
+	newcharacter.routeName = newcharacter.name.replace(/s+/g, "").toLowerCase();
+
+	console.log(newcharacter);
+
+	characters.push(newcharacter);
+
+	res.json(newcharacter);
+})
 
 //Listener
 //++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
